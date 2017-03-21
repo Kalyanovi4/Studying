@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+    <script>
+        //Lesson 1
+        Array.prototype.myMapR = function(callback, i=0) {
+            return this[0] ? [callback(this[0], i, this)].concat(this.slice(1).myMapR(callback, ++i)) : [];
+        };
+
+        //Lesson 2
+        //nextBigger
+        function nextBigger(num) {
+            if ( num.length == 1 ) return num;
+            var n = num.toString().split('');
+
+            var p = -1;
+            for (var i = n.length-1; i > 0; i--) {
+                if(n[i] > n[i-1]) {
+                    p = i-1;
+                    break;
+                }
+            }
+
+            var right = n.splice(p);
+            var pivot = right.splice(0, 1)[0];
+            var a = null, b = null;
+            for (var i = 0; i < right.length; i++) {
+                if (right[i] > pivot) {
+                    if (a == null || right[i] < a) {
+                        a = right[i];
+                        b = i;
+                    }
+                }
+            }
+
+            if (b == null) return n;
+
+            right.splice(b, 1);
+            right.push(pivot);
+            right = right.sort();
+
+            var res = n.concat([a]).concat(right).join('');
+            if (res < n) return n;
+
+            return res;
+        }
+
+        //Creating class
+        function MyObject(name) {
+            this.name = name;
+        }
+
+        MyObject.prototype.property = function (key, value) {
+            Object.defineProperty(this, key, {
+                value: value,  // not enumerable
+                writable: true,
+                enumerable: true
+            });
+        };
+        MyObject.prototype.constant = function (key, value) {
+            Object.defineProperty(this, key, {
+                value: value,  // not enumerable
+                writable: false,
+                enumerable: true
+            });
+        };
+        MyObject.prototype.hidden = function (key, value) {
+            Object.defineProperty(this, key, {
+                value: value  // not enumerable
+            });
+        };
+        MyObject.prototype.values = function () {
+            var res = [];
+            for (var key in obj) {
+                if (obj.hasOwnProperty(key)) {
+                    res.push(obj[key]);
+                }
+            }
+            return res;
+        };
+        var obj = new MyObject("Kolya");
+        obj.property("test", 123456);
+        obj.constant("test", 111);
+        obj.test = "qq";
+        console.log(obj.values());
+
+    </script>
+</body>
+</html>
