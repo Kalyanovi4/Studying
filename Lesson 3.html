@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <input id="inputUserId" type="text">
+    <button id="loadAlbums">Load albums</button>
+    <div id="albums"></div>
+
+<script type="text/javascript">
+
+    var printPhotos = function(photosContainer, photos) {
+        photos.forEach(function(photo){
+            photosContainer.innerHTML += '<li>' + photo.url + '</li>';
+        });
+    };
+
+    var printAlbums = function (albums) {
+        var albumsContainer = document.getElementById('albums');
+        albums.forEach(function (album) {
+            console.log(album);
+            var photosContainer = document.createElement("ul");
+            albumsContainer.innerHTML += '<h1>' + album.title + '</h1>';
+            albumsContainer.appendChild(photosContainer);
+            printPhotos(photosContainer, album.photos)
+        });
+    };
+
+    var API_URL = 'https://jsonplaceholder.typicode.com';
+    var ALBUMS = '/albums';
+    var PHOTOS = '/photos';
+
+    var toJson = function (res){
+        return res.json();
+    };
+
+    var allToJson = function (responses){
+        return Promise.all(responses.map(toJson));
+    };
+
+    var addPhotosToAlbums = function (albums, photos){
+        return new Promise (function(resolve, reject) {
+            albums = albums.map(function(album, i){
+                album.photos = photos[i];
+                return album;
+            });
+            resolve(albums);
+        });
+    };
+
+    var getAlbums = function(userId){
+        return fetch(API_URL + ALBUMS + '?userId=' + userId);
+    };
+
+    var getPhoto = function (album){
+        var albumId = album.id;
+        return fetch(API_URL + PHOTOS + '?albumId=' + albumId);
+    };
+
+    var combineWithPhoto = function(albums){
+        var photosRequests = albums.map(function(value){
+            return getPhoto(value);
+        });
+
+        return new Promise(function(resolve, reject){
+            Promise.all(photosRequests)
+              .then(allToJson)
+              .then(function(photos){
+                  return addPhotosToAlbums(albums, photos);
+              })
+              .then(resolve)
+              .catch(reject);
+        });
+    };
+
+    var loadAlbumsWithPhotos = function () {
+        var albumContainer = document.getElementById('albums');
+        var userId = document.getElementById('inputUserId').value;
+
+        /*getAlbums(userId)
+                .then(toJson)
+                .then(combineWithPhoto)
+                .then(printAlbums);*/
+        fff(userId);
+    };
+
+    async function fff(userId){
+        var albums = await getAlbums(userId);
+        var jsonAlbums = await toJson(albums);
+        var allData = await combineWithPhoto(jsonAlbums);
+        printAlbums(allData);
+    };
+
+    document.getElementById('loadAlbums').onclick = loadAlbumsWithPhotos;
+</script>
+
+</body>
+</html>
